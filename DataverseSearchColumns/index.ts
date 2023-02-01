@@ -1,11 +1,16 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
-import { ColumnsDummy, ColumnsSchema } from "./ColumnsSchema";
+import { ColumnsDummy, ColumnsSchema, IColumn } from "./ColumnsSchema";
 import { retrieveView } from "./RetrieveView";
+import { throws } from "assert";
+import { threadId } from "worker_threads";
 
 export class DataverseSearchColumns implements ComponentFramework.StandardControl<IInputs, IOutputs> {    
     private notifyOutputChanged: () => void;
     private columns : any;
     private tableName ?: string;
+    private sumWidth : number = 0;   
+    private widthToAdd : number = 0;
+    private ParentWidth : number = 0;
 
     /**
      * Empty constructor.
@@ -24,8 +29,24 @@ export class DataverseSearchColumns implements ComponentFramework.StandardContro
         notifyOutputChanged: () => void,
         state: ComponentFramework.Dictionary
     ): void {
-        this.notifyOutputChanged = notifyOutputChanged;
+        this.notifyOutputChanged = notifyOutputChanged;       
     }
+
+    private calcWidth = (columns : IColumn[]) : IColumn[] => {
+        this.sumWidth= columns.reduce((sum, current) => sum + (current.Width ?? 0) , 0);
+        if(this.sumWidth < this.ParentWidth) {
+            const delta = Math.round( (this.ParentWidth - this.sumWidth) / columns.length);
+            return columns.map((column) => {
+                return {
+                    ColName : column.ColName,
+                    ColDisplayName : column.ColDisplayName,
+                    ColWidth : (column.Width ?? 20) + delta, 
+                    Width : column.Width
+                };
+            });
+        }
+        return columns;
+    } 
 
     /**
      * Called when any value in the property bag has changed. This includes field values, data-sets, global values such as container height and width, offline status, control metadata values such as label, visible, etc.
@@ -34,13 +55,23 @@ export class DataverseSearchColumns implements ComponentFramework.StandardContro
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void {
         if(this.tableName != context.parameters.tableName.raw){ 
-            this.tableName = context.parameters.tableName.raw ?? "account";           
+            this.tableName = context.parameters.tableName.raw ?? "account";      
+            this.ParentWidth = context.parameters.ParentWidth.raw ?? 0;
             retrieveView(this.tableName, context).then((columns)=>{
                 this.columns = {
-                    Value : columns
-                }
+                    Value : this.calcWidth(columns)
+                }               
                 this.notifyOutputChanged();
             })                        
+        }
+        else {
+            if(this.ParentWidth != context.parameters.ParentWidth.raw && context.parameters.ParentWidth.raw != null){
+                this.ParentWidth = context.parameters.ParentWidth.raw ?? 0;
+                this.columns = {
+                    Value : this.calcWidth(this.columns.Value)
+                }
+                this.notifyOutputChanged();
+            }
         }
     }
 
@@ -49,10 +80,9 @@ export class DataverseSearchColumns implements ComponentFramework.StandardContro
      * @returns an object based on nomenclature defined in manifest, expecting object[s] for property marked as “bound” or “output”
      */
     public getOutputs(): IOutputs {
-        console.log(this.columns);
+        //console.log(this.columns);
         return { 
-            Columns : this.columns
-           // ColumnsSchema: JSON.stringify(ColumnsSchema)
+            Columns : this.columns          
         };
     }
 

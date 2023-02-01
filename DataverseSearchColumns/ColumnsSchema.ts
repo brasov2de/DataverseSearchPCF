@@ -21,6 +21,7 @@ export const ColumnsSchema = {
 export interface IColumn {
     ColName: string;
     CoLWidth ?: number;
+    Width ?: number;
     ColDisplayName : string;
 }
 
@@ -29,21 +30,25 @@ export const ColumnsDummy = {
         { 
             "ColName": "accountnumber",
             "ColWidth": 100,
+            "Width":100,
             "ColDisplayName": "No"
         },
         { 
             "ColName": "name",
             "ColWidth": 200,
+            "Width": 200,
             "ColDisplayName": "Name"
         },
         { 
             "ColName": "address1_city",
             "ColWidth": 200,
+            "Width" : 200,
             "ColDisplayName": "City"
         },
         { 
             "ColName": "telephone1",
             "ColWidth": 200,
+            "Width" : 200,
             "ColDisplayName": "Telephone"
         }
     ]

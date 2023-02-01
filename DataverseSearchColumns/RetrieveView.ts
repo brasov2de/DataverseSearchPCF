@@ -24,8 +24,9 @@ export const retrieveView = async (tableName : string, context: ComponentFramewo
     return columns.map((column: any)=> {
         return {
             ColName : column.Name,
-            ColWidth : column.Width,
+            ColWidth : column.Width,           
             ColDisplayName : attributesMetadata.Attributes.get(column.Name)?.DisplayName
+
         }
     })
 
