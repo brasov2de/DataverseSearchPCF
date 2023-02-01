@@ -1,3 +1,5 @@
+import { Interface } from "readline";
+
 export const ColumnsSchema = {
     "$schema": "http://json-schema.org/draft-04/schema#",
     "type": "object",
@@ -15,6 +17,12 @@ export const ColumnsSchema = {
         }
     }    
 };
+
+export interface IColumn {
+    ColName: string;
+    CoLWidth ?: number;
+    ColDisplayName : string;
+}
 
 export const ColumnsDummy = {    
     "Value": [

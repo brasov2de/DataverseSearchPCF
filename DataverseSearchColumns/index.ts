@@ -1,5 +1,6 @@
 import { IInputs, IOutputs } from "./generated/ManifestTypes";
 import { ColumnsDummy, ColumnsSchema } from "./ColumnsSchema";
+import { retrieveView } from "./RetrieveView";
 
 export class DataverseSearchColumns implements ComponentFramework.StandardControl<IInputs, IOutputs> {    
     private notifyOutputChanged: () => void;
@@ -32,9 +33,14 @@ export class DataverseSearchColumns implements ComponentFramework.StandardContro
      * @returns ReactElement root react element for the control
      */
     public updateView(context: ComponentFramework.Context<IInputs>): void {
-        if(this.tableName != context.parameters.tableName.raw){            
-            this.columns = ColumnsDummy;
-            this.notifyOutputChanged()
+        if(this.tableName != context.parameters.tableName.raw){ 
+            this.tableName = context.parameters.tableName.raw ?? "account";           
+            retrieveView(this.tableName, context).then((columns)=>{
+                this.columns = {
+                    Value : columns
+                }
+                this.notifyOutputChanged();
+            })                        
         }
     }
 
